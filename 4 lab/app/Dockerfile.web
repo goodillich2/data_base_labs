@@ -1,0 +1,15 @@
+FROM python:3.7.4
+
+WORKDIR /app
+
+RUN pip install --upgrade pip
+COPY requirements.txt ./requirements.txt
+RUN pip install -r requirements.txt
+RUN apt-get update && apt-get install -y libpq-dev
+
+COPY . .
+
+ENV FLASK_APP=front.py
+ENV FLASK_ENV=development
+
+CMD ["python", "front.py"]

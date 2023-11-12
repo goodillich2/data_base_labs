@@ -1,0 +1,76 @@
+version: '3.8' 
+services:
+  app:
+    build: 
+      context: ./app/
+      dockerfile: Dockerfile.app
+    depends_on:
+      - db
+    volumes:
+      - ./files:/app/files
+      - /app.files
+    environment:
+      PYTHONUNBUFFERED: 1  
+    networks:
+      - MY
+  db:
+    image: postgres:11
+    restart: always 
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=2509
+      - POSTGRES_DB=DB_lab_1 
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - '5433:5432' 
+    expose:
+      - '5432'
+    networks:
+      - MY
+  migrate:
+    build: 
+      context: ./app/
+      dockerfile: Dockerfile.app
+    depends_on:
+      - db
+    environment:
+      PYTHONUNBUFFERED: 1
+      FLASK_APP: "app.py"
+      FLASK_ENV: "development"
+    command: "flask db upgrade"
+    networks:
+      - MY    
+  pgadmin:
+    image: dpage/pgadmin4:5.7
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'user@domain.com'
+      PGADMIN_DEFAULT_PASSWORD: 'SuperSecret'
+    ports:
+      - '8080:80'
+    networks:
+      - MY
+  web:
+    build:
+      context: ./app/
+      dockerfile: Dockerfile.web
+    depends_on:
+      - db
+    environment:
+      PYTHONUNBUFFERED: 1
+      FLASK_APP: "front.py"
+      FLASK_ENV: "development"
+    ports:
+      - '5003:5000'
+    networks:
+      - MY
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    networks:
+      - MY    
+
+networks:
+  MY:
+      
